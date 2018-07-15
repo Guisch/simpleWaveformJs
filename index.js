@@ -2,7 +2,7 @@ var spawn = require('child_process').spawn;
 var path = require('path');
 
 var getWaveform = function(input, callback) {
-  var args = ['-i', input, '-o', path.join(__dirname, 'sample.json'), '-b', '8'];
+  var args = ['-i', input, '-o', path.join(__dirname, 'sample.json'), '-b', '8', '--pixels-per-second', '10'];
 
   var wf = spawn('audiowaveform', args);
 
