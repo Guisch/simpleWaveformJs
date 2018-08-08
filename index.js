@@ -2,28 +2,53 @@ var spawn = require('child_process').spawn;
 var path = require('path');
 
 var getWaveform = function(input, callback) {
-  var args = ['-i', input, '-o', path.join(__dirname, 'sample.json'), '-b', '8', '--pixels-per-second', '10'];
+  var ffprobe = spawn('ffprobe', [input, '-show_streams']);
 
-  var wf = spawn('audiowaveform', args);
+  ffprobe.stdout.on('data', function(data) {
+    data = data.toString();
+    var durationRegex = /duration=(.*)/i
 
-  wf.stderr.on('data', function(data) {
-    console.log('Error when generating Waveform:', data.toString());
+    if (durationRegex.test(data)) {
+      var duration = parseFloat(durationRegex.exec(data)[1]);
+      var width = 10 * duration;
+      var args = ['-i', input, '-o', path.join(__dirname, 'sample.json'), '--pixels-per-second', '10', '-w', width.toString()];
+
+      var wf = spawn('audiowaveform', args);
+
+      wf.stderr.on('data', function(data) {
+        console.log('Error when generating Waveform:', data.toString());
+      });
+
+      wf.on('exit', function(code) {
+        if (code.toString() != '0') {
+          console.log('Error when generating Waveform');
+          return callback();
+        }
+
+        var jsonOutput = require(path.join(__dirname, 'sample.json'));
+        var output = [];
+        for (var i = 0; i < jsonOutput.data.length; i+=2) {
+          output.push(jsonOutput.data[i]);
+        }
+        var min = Math.min(...output);
+        var max = Math.max(...output);
+
+        for(var i = 0; i < output.length; i++) {
+          output[i] = (1 - ((output[i] - min) / (max - min))).toFixed(3);
+        }
+
+        return callback(output);
+      });
+    }
   });
 
-  wf.on('exit', function(code) {
+  ffprobe.on('exit', function(code) {
     if (code.toString() != '0') {
-      console.log('Error when generating Waveform');
+      console.log('Error when getting duration');
       return callback();
     }
-
-    var jsonOutput = require(path.join(__dirname, 'sample.json'));
-    var output = [];
-    for(var i = 0; i < jsonOutput.data.length; i++) {
-      output[i] = (jsonOutput.data[i]+127)/254;
-    }
-
-    return callback(output);
   });
 }
 
 exports.getWaveform = getWaveform;
+
