@@ -1,6 +1,8 @@
 var exec = require('child_process').exec;
 var path = require('path');
 
+const precision = 100;
+
 var getWaveform = function(input, callback) {
   exec('ffprobe -show_streams "' + input + '"', function(err, stdout, stderr) {
     if (err) {
@@ -12,8 +14,8 @@ var getWaveform = function(input, callback) {
 
     if (durationRegex.test(stdout)) {
       var duration = parseInt(durationRegex.exec(stdout)[1]);
-      var width = 10 * duration;
-      var args = ['-i', "'" + input + "'", '-o', path.join(__dirname, 'sample.json'), '--pixels-per-second', '10', '-w', width.toString()];
+      var width = precision * duration;
+      var args = ['-i', "'" + input + "'", '-o', path.join(__dirname, 'sample.json'), '--pixels-per-second', precision.toString(), '-w', width.toString()];
 
       exec('audiowaveform ' + args.join(' '), function(err, stdout, stderr) {
         if (err || stderr) {
