@@ -9,7 +9,7 @@ var getWaveform = function(input, callback) {
     var durationRegex = /duration=(.*)/i
 
     if (durationRegex.test(data)) {
-      var duration = parseFloat(durationRegex.exec(data)[1]);
+      var duration = parseInt(durationRegex.exec(data)[1]);
       var width = 10 * duration;
       var args = ['-i', input, '-o', path.join(__dirname, 'sample.json'), '--pixels-per-second', '10', '-w', width.toString()];
 
@@ -51,4 +51,3 @@ var getWaveform = function(input, callback) {
 }
 
 exports.getWaveform = getWaveform;
-
