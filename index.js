@@ -1,27 +1,23 @@
-var spawn = require('child_process').spawn;
+var exec = require('child_process').exec;
 var path = require('path');
 
 var getWaveform = function(input, callback) {
-  var ffprobe = spawn('ffprobe', [input, '-show_streams']);
+  exec('ffprobe -show_streams "' + input + '"', function(err, stdout, stderr) {
+    if (err) {
+      console.log('Error when gettin duration', err);
+      return callback();
+    }
 
-  ffprobe.stdout.on('data', function(data) {
-    data = data.toString();
     var durationRegex = /duration=(.*)/i
 
-    if (durationRegex.test(data)) {
-      var duration = parseInt(durationRegex.exec(data)[1]);
+    if (durationRegex.test(stdout)) {
+      var duration = parseInt(durationRegex.exec(stdout)[1]);
       var width = 10 * duration;
-      var args = ['-i', input, '-o', path.join(__dirname, 'sample.json'), '--pixels-per-second', '10', '-w', width.toString()];
+      var args = ['-i', "'" + input + "'", '-o', path.join(__dirname, 'sample.json'), '--pixels-per-second', '10', '-w', width.toString()];
 
-      var wf = spawn('audiowaveform', args);
-
-      wf.stderr.on('data', function(data) {
-        console.log('Error when generating Waveform:', data.toString());
-      });
-
-      wf.on('exit', function(code) {
-        if (code.toString() != '0') {
-          console.log('Error when generating Waveform');
+      exec('audiowaveform ' + args.join(' '), function(err, stdout, stderr) {
+        if (err || stderr) {
+          console.log('Error when generating waveform', err, stderr);
           return callback();
         }
 
@@ -34,18 +30,11 @@ var getWaveform = function(input, callback) {
         var max = Math.max(...output);
 
         for(var i = 0; i < output.length; i++) {
-          output[i] = (1 - ((output[i] - min) / (max - min))).toFixed(3);
+          output[i] = parseFloat((1 - ((output[i] - min) / (max - min))).toFixed(3));
         }
 
         return callback(output);
       });
-    }
-  });
-
-  ffprobe.on('exit', function(code) {
-    if (code.toString() != '0') {
-      console.log('Error when getting duration');
-      return callback();
     }
   });
 }
