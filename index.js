@@ -1,7 +1,7 @@
 var exec = require('child_process').exec;
 var path = require('path');
 
-const precision = 100;
+const precision = 10;
 
 var getWaveform = function(input, callback) {
   exec('ffprobe -show_streams "' + input + '"', function(err, stdout, stderr) {
