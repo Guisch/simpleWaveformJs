@@ -25,23 +25,31 @@ var getWaveform = function(input, callback) {
           return callback();
         }
 
-        var jsonOutput = JSON.parse(JSON.stringify(require(samplejson).data));
-        fs.unlink(samplejson, (err) => {
-          if (err)
-            console.log('Error when deleting sample.json',err);
+        
+        fs.readFile(samplejson, function(err, data) {
+          if (err) {
+            console.log('Error when reading file');
+            return callback();
+          }
+          
+          var jsonOutput = JSON.parse(data).data;
+          fs.unlink(samplejson, (err) => {
+            if (err)
+              console.log('Error when deleting sample.json',err);
+          });
+          var output = [];
+          for (var i = 0; i < jsonOutput.length; i+=2) {
+            output.push(jsonOutput[i]);
+          }
+          var min = Math.min(...output);
+          var max = Math.max(...output);
+
+          for(var i = 0; i < output.length; i++) {
+            output[i] = parseFloat((1 - ((output[i] - min) / (max - min))).toFixed(3));
+          }
+
+          return callback(output);
         });
-        var output = [];
-        for (var i = 0; i < jsonOutput.length; i+=2) {
-          output.push(jsonOutput[i]);
-        }
-        var min = Math.min(...output);
-        var max = Math.max(...output);
-
-        for(var i = 0; i < output.length; i++) {
-          output[i] = parseFloat((1 - ((output[i] - min) / (max - min))).toFixed(3));
-        }
-
-        return callback(output);
       });
     }
   });
