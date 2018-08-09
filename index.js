@@ -1,5 +1,6 @@
 var exec = require('child_process').exec;
 var path = require('path');
+var fs = require('fs');
 
 const precision = 10;
 
@@ -15,7 +16,8 @@ var getWaveform = function(input, callback) {
     if (durationRegex.test(stdout)) {
       var duration = parseInt(durationRegex.exec(stdout)[1]);
       var width = precision * duration;
-      var args = ['-i', "'" + input + "'", '-o', path.join(__dirname, 'sample.json'), '--pixels-per-second', precision.toString(), '-w', width.toString()];
+      var samplejson = path.join(__dirname, 'sample.json');
+      var args = ['-i', "'" + input + "'", '-o', samplejson, '--pixels-per-second', precision.toString(), '-w', width.toString()];
 
       exec('audiowaveform ' + args.join(' '), function(err, stdout, stderr) {
         if (err || stderr) {
@@ -23,10 +25,14 @@ var getWaveform = function(input, callback) {
           return callback();
         }
 
-        var jsonOutput = require(path.join(__dirname, 'sample.json'));
+        var jsonOutput = JSON.parse(JSON.stringify(require(samplejson).data));
+        fs.unlink(samplejson, (err) => {
+          if (err);
+            console.log('Error when deleting sample.json',err);
+        });
         var output = [];
-        for (var i = 0; i < jsonOutput.data.length; i+=2) {
-          output.push(jsonOutput.data[i]);
+        for (var i = 0; i < jsonOutput.length; i+=2) {
+          output.push(jsonOutput[i]);
         }
         var min = Math.min(...output);
         var max = Math.max(...output);
