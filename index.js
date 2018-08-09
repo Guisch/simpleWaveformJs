@@ -16,7 +16,7 @@ var getWaveform = function(input, callback) {
     if (durationRegex.test(stdout)) {
       var duration = parseInt(durationRegex.exec(stdout)[1]);
       var width = precision * duration;
-      var samplejson = path.join(__dirname, 'sample' + Math.random().toString(36).substring(7); + '.json');
+      var samplejson = path.join(__dirname, 'sample' + Math.random().toString(36).substring(7) + '.json');
       var args = ['-i', "'" + input + "'", '-o', samplejson, '--pixels-per-second', precision.toString(), '-w', width.toString()];
 
       exec('audiowaveform ' + args.join(' '), function(err, stdout, stderr) {
