@@ -27,7 +27,7 @@ var getWaveform = function(input, callback) {
 
         var jsonOutput = JSON.parse(JSON.stringify(require(samplejson).data));
         fs.unlink(samplejson, (err) => {
-          if (err);
+          if (err)
             console.log('Error when deleting sample.json',err);
         });
         var output = [];
