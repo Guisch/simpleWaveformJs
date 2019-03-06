@@ -2,11 +2,11 @@
 
 Easy wrapper for [audiowaveform](https://github.com/bbc/audiowaveform)
 
-Output normalized waveform data (between 0 and 1)
+Output normalized waveform data (between 0 and 1). Designed to be run on ubuntu
 
 ## Dependencies
 
-- [audiowaveform](https://github.com/bbc/audiowaveform)
+- [audiowaveform](https://github.com/bbc/audiowaveform) (installed in the npm preinstall script)
 - ffprobe (ffmpeg)
 
 ## Install
